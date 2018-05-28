@@ -7,8 +7,14 @@ from PIL import Image
 from PIL import ImageTk
 import threading
 import numpy as np
+import socket
 
-class TOF():
+# TODO
+# http://raspberrypihq.com/how-to-turn-a-raspberry-pi-into-a-wifi-router/
+# Create webserver to host 
+# http://www.instructables.com/id/Python-Web-Server-for-your-Raspberry-Pi/
+# https://code.tutsplus.com/tutorials/creating-a-web-app-from-scratch-using-python-flask-and-mysql--cms-22972
+class TOF:
 	def __init__(self):
 		# OpenCV
 		self.cap = cv2.VideoCapture(0)
