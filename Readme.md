@@ -1,4 +1,4 @@
-## Pre-requesities
+## Prerequisites
  - Python 2.7
  - Pip
 
