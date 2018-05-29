@@ -7,21 +7,18 @@ from PIL import Image
 from PIL import ImageTk
 import threading
 import numpy as np
-import socket
 
 # TODO
 # http://raspberrypihq.com/how-to-turn-a-raspberry-pi-into-a-wifi-router/
-# Create webserver to host 
-# http://www.instructables.com/id/Python-Web-Server-for-your-Raspberry-Pi/
-# https://code.tutsplus.com/tutorials/creating-a-web-app-from-scratch-using-python-flask-and-mysql--cms-22972
-class TOF:
+
+# Extending the Thread class to implement some new functionalities
+class TOF(threading.Thread):
 	def __init__(self):
 		# OpenCV
-		self.cap = cv2.VideoCapture(0)
 		self.font = cv2.FONT_HERSHEY_SIMPLEX
 		self.prev_hist = None
 		self.prev_subframe = None
-
+		self.cap = cv2.VideoCapture(0)
 		# Variables related to TIME
 		self.timer_stopped = False
 		self.time_flight = 0
@@ -66,11 +63,14 @@ class TOF:
 
 		# Callback when we close window
 		self.root.wm_protocol("WM_DELETE_WINDOW", self.onClose)
-
+		# This will start video
+		threading.Thread.__init__(self, target = self.setup)
+		return 
+	def setup(self):
 		# Thread for video capture
 		self.videp_capture = threading.Thread(target=self.run, args=())
-		self.videp_capture.start()
-
+		self.videp_capture.start()		
+		self.root.mainloop()
 	def run(self):
 		# First we reset the stopwatch
 		self.reset()
@@ -89,7 +89,6 @@ class TOF:
 			change_in_video = self.change(img_original)
 			# Pretty arbitrary threshold 
 			if change_in_video > 0.06:
-	
 				self.timer_stopped = True
 
 			elif change_in_video < 0.02 and self.timer_stopped:
@@ -213,3 +212,6 @@ class TOF:
 		self.break_condition = True
 		self.cap.release()
 		self.root.quit()
+	# Functions to get data from TOF class
+	def getTimes(self):
+		return {'flight': self.time_flight, 'total': self.time_tot}

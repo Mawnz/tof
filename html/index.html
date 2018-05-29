@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+ 
+<head>
+    <title>Time of Flight</title> 
+    <!-- http://flask.pocoo.org/docs/1.0/quickstart/#static-files -->
+    <script type = "text/javascript" src = "{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"></script>
+</head>
+ 
+<body> 
+    <div class="container">
+        <button id = "kill_btn">Kill TOF</button>
+        <button id = "button">Click me</button>
+        <span id = "stopwatch_flight">
+            
+        </span>
+        <span id = "stopwatch_total">
+            
+        </span>
+        <table id = "times_table">
+        </table>
+    </div>
+    <script type = "text/javascript" src = "{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
