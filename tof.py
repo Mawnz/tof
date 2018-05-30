@@ -11,7 +11,7 @@ import numpy as np
 class TOF():
 	def __init__(self):
 		# OpenCV
-		self.cap = cv2.VideoCapture(0)
+		self.cap = cv2.VideoCapture(1)
 		self.font = cv2.FONT_HERSHEY_SIMPLEX
 		self.prev_hist = None
 		self.prev_subframe = None
@@ -23,10 +23,15 @@ class TOF():
 		self.time_tot = 0
 		self.timer_active = False
 		self.freeze_time = False
+		# We realise that there is room for error, 1/fps
+		self.fps = 30
+		# Assume we get the wrong time half of the time yolo
+		self.error = 1/(self.fps / 2)
 
 		# General variables
 		self.skills = 1
 		self.offset_y = 50
+		self.offset_x = 100
 
 		# Graphics
 		self.root = tk.Tk()
@@ -64,7 +69,6 @@ class TOF():
 		# Thread for video capture
 		self.videp_capture = threading.Thread(target=self.run, args=())
 		self.videp_capture.start()
-
 	def run(self):
 		# First we reset the stopwatch
 		self.reset()
@@ -82,14 +86,15 @@ class TOF():
 			# 	Get change in video as float (higher value == more activity)
 			change_in_video = self.change(img_original)
 			# Pretty arbitrary threshold 
-			if change_in_video > 0.06:
+			if change_in_video >= 0.1:
 	
 				self.timer_stopped = True
 
-			elif change_in_video < 0.02 and self.timer_stopped:
+			elif change_in_video < 0.1 and self.timer_stopped:
 				# If we haven't started the timer we should reset it
 				if self.timer_active:
-					self.time_mat += time.time() - self.start_time_mat
+					# We subtract the possible error since we are not 100% precise with the cameras framerate
+					self.time_mat += (time.time() - self.start_time_mat) - self.error
 				else:
 					self.start_time = time.time()
 				
@@ -166,7 +171,7 @@ class TOF():
 		self.tot_text.insert(tk.END, '%.2f' % self.time_tot)
 	def change(self, frame):
 		# Only interested in part of frame above our threshold
-		cur_subframe = frame[:(self.offset_y ), :]
+		cur_subframe = frame[:(self.offset_y ), self.offset_x:-self.offset_x]
 		if self.prev_subframe is None:
 			self.prev_subframe = cur_subframe
 			return 0
@@ -197,8 +202,8 @@ class TOF():
 		self.prev_hist = cur_hist
 		return hist_compared_float
 	def drawLine(self, frame):
-		start = (0, self.offset_y)
-		end = (len(frame[0]), self.offset_y)
+		start = (self.offset_x, self.offset_y)
+		end = (len(frame[0]) - self.offset_x, self.offset_y)
 		return cv2.line(frame,start,end,(255,0,0),2)
 	def addText(self, frame, text):
 		# Returns an image with the text overlayed
